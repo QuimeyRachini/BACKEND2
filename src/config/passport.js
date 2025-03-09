@@ -5,7 +5,12 @@ const ExtractJwt = require('passport-jwt').ExtractJwt;
 const User = require('../models/userModel');
 const bcrypt = require('bcrypt');
 
+// Estrategia Local para autenticación con email y contraseña
 passport.use(new LocalStrategy(
+  {
+    usernameField: 'email',
+    passwordField: 'password'
+  },
   async (email, password, done) => {
     try {
       const user = await User.findOne({ email });
@@ -23,11 +28,13 @@ passport.use(new LocalStrategy(
   }
 ));
 
+// Opciones para la estrategia JWT
 const opts = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-  secretOrKey: 'your_jwt_secret', 
+  secretOrKey: 'quimeybackend2', // Cambia esto por tu clave secreta
 };
 
+// Estrategia JWT para autenticación con token
 passport.use(new JwtStrategy(opts, async (jwt_payload, done) => {
   try {
     const user = await User.findById(jwt_payload.id);

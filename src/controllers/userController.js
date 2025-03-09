@@ -52,9 +52,9 @@ class UserController {
 
   async currentUser(req, res) {
     try {
-      const user = await this.userModel.findById(req.user.id);
+      const user = req.user; // Extrae el usuario del request
       if (!user) {
-        return res.status(404).json({ message: 'User not found' });
+        return res.status(401).json({ message: 'Usuario no autenticado' });
       }
       res.status(200).json({ user });
     } catch (error) {
