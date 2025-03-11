@@ -1,50 +1,50 @@
-const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
-const JwtStrategy = require('passport-jwt').Strategy;
-const ExtractJwt = require('passport-jwt').ExtractJwt;
-const User = require('../models/userModel');
-const bcrypt = require('bcrypt');
+import passport from 'passport';
+import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
+import LocalStrategy from 'passport-local';
+import User from '../models/userModel.js';
+import dotenv from 'dotenv';
 
-// Estrategia Local para autenticación con email y contraseña
-passport.use(new LocalStrategy(
-  {
-    usernameField: 'email',
-    passwordField: 'password'
-  },
-  async (email, password, done) => {
-    try {
-      const user = await User.findOne({ email });
-      if (!user) {
-        return done(null, false, { message: 'Email Incorrecto.' });
-      }
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) {
-        return done(null, false, { message: 'Contraseña incorrecta.' });
-      }
-      return done(null, user);
-    } catch (err) {
-      return done(err);
+dotenv.config();
+
+const localOptions = { usernameField: 'email' };
+
+const localLogin = new LocalStrategy(localOptions, async (email, password, done) => {
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return done(null, false, { message: 'Invalid credentials.' });
     }
-  }
-));
 
-// Opciones para la estrategia JWT
-const opts = {
-  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-  secretOrKey: 'quimeybackend2', // Cambia esto por tu clave secreta
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      return done(null, false, { message: 'Invalid credentials.' });
+    }
+
+    return done(null, user);
+  } catch (err) {
+    return done(err);
+  }
+});
+
+const jwtOptions = {
+  jwtFromRequest: ExtractJwt.fromHeader('authorization'),
+  secretOrKey: process.env.JWT_SECRET
 };
 
-// Estrategia JWT para autenticación con token
-passport.use(new JwtStrategy(opts, async (jwt_payload, done) => {
+const jwtLogin = new JwtStrategy(jwtOptions, async (payload, done) => {
   try {
-    const user = await User.findById(jwt_payload.id);
-    if (user) {
-      return done(null, user);
+    const user = await User.findById(payload.sub);
+    if (!user) {
+      return done(null, false);
     }
-    return done(null, false);
+
+    return done(null, user);
   } catch (err) {
     return done(err, false);
   }
-}));
+});
 
-module.exports = passport;
+passport.use(jwtLogin);
+passport.use(localLogin);
+
+export default passport;

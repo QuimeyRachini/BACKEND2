@@ -1,0 +1,52 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .container {
+    width: 80%;
+    margin: auto;
+    overflow: hidden;
+  }
+  
+  header {
+    background: #333;
+    color: #fff;
+    padding-top: 30px;
+    min-height: 70px;
+    border-bottom: #77aaff 3px solid;
+  }
+  
+  header a {
+    color: #fff;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-size: 16px;
+  }
+  
+  ul {
+    padding: 0;
+    list-style: none;
+  }
+  
+  ul li {
+    display: inline;
+    padding: 0 20px 0 20px;
+  }
+  
+  .product {
+    background: #fff;
+    margin: 20px 0;
+    padding: 20px;
+    border: 1px solid #ddd;
+  }
+  
+  .product h2 {
+    margin: 0 0 10px;
+  }
+  
+  .product p {
+    margin: 0 0 10px;
+  }

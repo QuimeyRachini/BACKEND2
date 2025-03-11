@@ -1,17 +1,18 @@
-import User from '../models/userModel.js';
+import UserRepository from '../repositories/userRepository.js';
+import UserDTO from '../dto/userDTO.js';
 import { generateToken } from '../utils/jwtUtils.js';
 import { hashPassword, comparePassword } from '../utils/bcrypt.js';
 
 class UserController {
   constructor() {
-    this.userModel = User;
+    this.userRepository = UserRepository;
   }
 
   async register(req, res) {
     const { first_name, last_name, email, age, password } = req.body;
     try {
       const hashedPassword = hashPassword(password);
-      const newUser = await this.userModel.create({
+      const newUser = await this.userRepository.registerUser({
         first_name,
         last_name,
         email,
@@ -30,7 +31,7 @@ class UserController {
     const { email, password } = req.body;
     try {
       console.log('Login attempt:', { email, password });
-      const user = await this.userModel.findOne({ email });
+      const user = await this.userRepository.loginUser(email);
       if (!user) {
         console.log('User not found');
         return res.status(401).json({ message: 'Invalid credentials' });
@@ -52,11 +53,12 @@ class UserController {
 
   async currentUser(req, res) {
     try {
-      const user = req.user; // Extrae el usuario del request
+      const user = await this.userRepository.getUserById(req.user.id);
       if (!user) {
-        return res.status(401).json({ message: 'Usuario no autenticado' });
+        return res.status(404).json({ message: 'User not found' });
       }
-      res.status(200).json({ user });
+      const userDTO = new UserDTO(user);
+      res.status(200).json({ user: userDTO });
     } catch (error) {
       console.error('Error fetching user data:', error);
       res.status(500).json({ message: 'Error fetching user data', error });
